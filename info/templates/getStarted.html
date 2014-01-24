@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}
+	开始使用
+{% endblock title %}
+
+{% block body %}
+	data-spy="scroll" data-target=".bs-sidebar"
+{% endblock body %}
+
+{% block getStartedClass %}
+	active
+{% endblock getStartedClass %}
+
+{% block header %}
+<div class="jumbotron jumbotron-ad hidden-print" style='color:white;'>
+  <div class="container">
+    <h1><i class="fa fa-rocket"></i>&nbsp; 开始使用</h1>
+    <p>快速简单的文件传输共享，开始使用Winfly吧</p>
+  </div>
+</div>
+{% endblock header %}
+{% block content %}
+<div class='container'>
+	<div class="row">
+		<div class="col-md-3">
+			<div class="bs-sidebar hidden-print" data-spy="affix" data-offset-top="200" role="complementary">
+				<ul class="nav bs-sidenav">
+					<li>
+						<a href="#basicUsage">玩法</a>
+						<ul class="nav " >
+							<li><a href="#basicUsage-video">在线视频播放</a></li>
+							<li><a href='#basicUsage-usb'>超高速优盘</a></li>
+							<li><a href='#basicUsage-share'>与朋友分享</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#install" >安装</a>
+					</li>
+					<li>
+						<a href='#start'>开始使用</a>
+						<ul class='nav'>
+							<li><a href='#first-run'>第一次启动</a></li>
+							<li><a href='#first-login'>第一次登陆</a></li>
+							<li><a href='#add-shareFolder'>添加共享‘</a></li>
+						</ul>
+					</li>
+					
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-9" role="main">
+			<ul id="user-site" class="tutorial-list wrapper active">
+				<li class='align-left' id='basicUsage'>
+				<div class='bs-docs-section'>
+					<h1>玩法</h1>
+					<h4>在线看视频</h4>
+					手机的屏幕越来越大，平板用来看视频再好也不过了。但是一般在线看要受到网速的限制，想要流畅就必须接受很差的画质。视频文件在手机和电脑间来回复制又过于麻烦。现在有了Winfly，你可以轻松的在线看视频了。只要在手机上点击你所共享的视频就可以直接在线播放。
+					<div class='doc-img'>
+						<img class='img-thumbnail' src='/static/img/docs/movie-blue-ray.png'>
+						<span>蓝光视频流畅播放</span>
+					</div>
+					<div class='doc-img'>
+						<img class='img-thumbnail' src='/static/img/docs/movie-1080.png'>
+						<span>1080P视频在线播放效果</span>
+					</div>
+					<h4>超高速U盘</h4>
+					在局域网环境中，Winfly完全可以取代U盘。如果采用有线网络连接，百兆带宽网络理论速度能够达到12M每秒(一般网络都是百兆带宽的)。如果是千兆网络速度还会更高。还在用优盘做文件传输工具吗，快用Winfly吧。<br>
+					<div class='doc-img'>
+						<img class='img-thumbnail' src='/static/img/docs/fast-download.png'>
+						<span>局域网高速文件传输</span>
+					</div>
+					<br>
+					什么是局域网环境？<br>
+					如果你在学校，公司，或者家中上网，那么一般你所在的网络环境就是一个局域网。局域网就是一个局域的网络，这个网络通过路由器连接到外部的互联网。你办理的上网业务的带宽指的是由路由器连接到互联网的带宽。但是局域网内的带宽是由路由器的网卡和电脑的网卡带宽决定的。这个带宽一般是100M。所以可能你办理的网络带宽只有4M，但是在局域网内你仍然可以享受到100M的速度。
+					局域网具有一定的范围，比如学校的局域网一般只能在学校内使用。不过只要你在学校的网络中你都可以访问到你的文件。Winfly非常适合公司，学校作为ftp的一种替代方案来使用。
+					<br>
+					<h4>与朋友分享</h4>
+					想要和朋友分享你的资源怎么办？还在用优盘，用网盘吗？不，你有更好的选择 ——Winfly。只要把文件的地址复制给你的朋友，那么他就可以直接下载这个资源。
+				</div>
+				</li>
+
+				<li class="align-left">
+					<div class="bs-docs-section">
+							<h1 id="install">安装</h1>
+							双击安装程序即可安装。<br>
+							需要注意的事情:由于本程序需要联网使用，如果防火墙弹出提示，请允许本程序访问网络。
+					</div>
+				</li>
+				<li class='align-left'>
+					<div class="bs-docs-section">
+						<h1 id='start'>开始使用</h1>
+						<h4 id='first-run'>第一次运行</h4>
+						<p>
+							程序执行时候会出现如下界面，点击第一个房子按钮就可在浏览器中打开程序主界面。
+						</p>
+						<div class='doc-img'>
+							<img src='/static/img/docs/ui.png'>
+							<span>程序启动后界面</span>
+						</div>
+						<h4 id='first-login'>第一次登录</h4>
+						第一次通过浏览器访问会要求注册管理员账号。如下图所示
+						<div class='doc-img'>
+							<img class='img-thumbnail' src='/static/img/docs/reg-superuser.png'>
+							<span>第一次登录要求注册管理员</span>
+						</div>
+						注册完成之后你会获得一个地址。以后可以通过这个地址方便的访问自己的电脑。注意第一次使用需要连接网络。<br>
+						注册完成之后点击登录，会跳转到登录界面。之后你就可以用刚才注册的信息登录了。登录完成之后会跳转到主界面。如下图所示
+						<div class='doc-img'>
+							<img class='img-thumbnail' src='/static/img/docs/index-first.png'>
+							<span>初次登录的主界面</span>
+						</div>
+						<h4 id='add-shareFolder'></h4>
+						这时点击添加就可以添加共享的文件夹了。注意最下面的链接就是你的电脑的地址，这个一旦注册就不会改变，你可以在任何地方通过这个链接访问你的电脑。
+						点击添加后会跳转到如下页面
+						<div class='doc-img'>
+							<img class='img-thumbnail' src='/static/img/docs/set-folder.png'>
+							<span>添加共享文件夹</span>
+						</div>
+						上面的框内会显示已经添加的共享文件夹，下面的框内是你的电脑内的文件。上图中D:和C:就对应电脑的C盘和D盘。点击对应的图标就能够浏览里面的内容。找到你要共享的文件夹，点击右侧的添加就能添加了。注意目前只能添加文件夹不能添加单个文件。添加完成之后如下图所示。
+						
+						点击已共享文件夹右侧的删除即可取消共享
+						设置完共享文件夹就可以开始访问自己的文件了。点击左上角的房子图标就可以跳转到主页。如下图所示。
+						<div class='doc-img'>
+							<img class='img-thumbnail' src='/static/img/docs/index-second.png'>
+							<span>添加完成后的主页</span>
+						</div>
+						基本设置已经完成，想要了解更多软件的使用方法请参阅用户手册。<br>
+						<h4>Enjoy it now!</h4>
+					</div> 
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}
+

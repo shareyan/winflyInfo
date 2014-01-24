@@ -1,0 +1,559 @@
+{% extends 'community/templates/base.html' %}
+
+
+{% block content %}
+
+
+<div style='margin-top:20px;'>
+	<button class='btn btn-primary newPost-btn' onclick='newPost()'>新主题</button>
+	<button class='btn btn-primary hide viewPost-btn' onclick='viewPost()'>查看主题</button>
+<div>
+<hr>
+
+<style>
+	.post{
+		width: 100%;
+		text-align: left;
+		border: solid 1px hsl(0, 0%, 50%);
+		border-radius: 5px;
+		padding: 10px;
+		font-size: 20px;
+		margin:10px 0px 10px 0px;
+	}
+	
+	.post>a:hover{
+		background-color:white;
+	}
+	
+	.post>.time{
+		margin-left:30px;
+		float:right;
+	}
+	.Post{
+		border: solid 1px hsl(0, 0%, 50%);
+		padding: 10px;
+		border-radius: 10px;
+		margin:10px 0px 10px 0px;
+	}
+	
+	.Post>.title{
+		font-size:20px;
+		margin-top:10px;
+	}
+	
+	.Post>.content{
+		margin:10px 0px 10px 0px;
+		font-size:16px;
+		text-align:center;
+	}
+	
+</style>
+
+<div class='postList'></div>
+<div class='viewPost hide'>
+	<div class='Post'>
+	</div>
+	<div class='comment-btn'>
+		<button class='btn btn-success col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments.show()'>回复</button>
+	</div>
+	<div class='comment hide'>
+		<textarea id='comments.content' style='width:100%;height:100px;border:solid 1px;'></textarea>
+		<button class='btn btn-success col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments(1)'>确认</button>
+		<button class='btn btn-primary col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments.cancel()'>取消</button>
+	</div>
+	<i class='fa fa-spinner fa-spin fa-4x hide' id='comments.spinner'></i>
+	<ul class="list-group comments">
+	</ul>
+	<i class='fa fa-spinner fa-spin fa-4x hide' id='comments.spinner'></i>
+</div>
+
+<script>
+	function myNotify(title,content){
+		Stashy.Notify({
+			title : title,
+			content : content,
+			titleSize : 4,
+			style : "default",
+			contentType : "inline",
+			animDuration : "fast",
+			closeArea : "element"
+		}).toast("right", "top", true);
+	}
+	
+	function sendComments(id){
+		
+		var content = $("#comments\\.content").val();
+		if(content == '' || typeof content == 'undefined'){
+			myNotify('错误','评论不能为空');
+			return;
+		}
+		$.post('/comment',{
+			target:id,
+			content:content,
+			csrfmiddlewaretoken:"{{csrf_token}}",
+		},function(data){
+			if(data.message =="OK"){
+				myNotify("成功","评论已经发表");
+				expendPost(id);
+			}
+		})
+	}
+	
+	sendComments.show = function(){
+		$(document).scrollTop(0);
+		$('.comment').removeClass('hide');
+		$('.comment-btn').addClass('hide');
+	}
+	
+	sendComments.cancel = function(){
+		$('.comment').addClass('hide');
+		$('.comment-btn').removeClass('hide');
+	}
+	
+	var serverData = {};
+	{% autoescape off %}
+	serverData.postList = [
+		{% for pageNum in postList %}
+			{
+				topic:{{pageNum.content}}.topic,
+				content:{{pageNum.content}}.content,
+				time:{{pageNum.time}},
+				author:{
+					name:"{{pageNum.author.name}}",
+					id:"{{pageNum.author.name}}",
+				},
+				viewCount:{{pageNum.viewCount}},
+				commentNum:{{pageNum.commentNum}},
+				id:{{pageNum.id}},
+			},
+		{% endfor %}
+	];
+	serverData.totalPageNum = {{totalPageNum}};
+	serverData.pageList = [
+		{% for page in pageList %}
+			{{page}},
+		{% endfor %}
+	];
+	serverData.startNum = {{startNum}};
+	serverData.endNum = {{endNum}};
+	serverData.currentPage = {{currentPage}};
+	//not user info without login
+	serverData.user = {
+		name:"{{user.username}}",
+		id:{{user.pk}},
+	};
+	serverData.commentList = [];
+	{% endautoescape %}
+	console.log(serverData);
+	
+	
+	function updateView(){
+		$('#newPost\\.editor').addClass('hide');
+	
+		if(serverData.user != ''){
+			//user has login
+			var templates = "<li><a href='#'>${name}</a></li>";
+			$('.navbar-right').html(juicer(templates,{'name':serverData.user.name}));
+		}
+		
+		juicer.register('getTime', getTime);
+		var postTemplate =  "{@each postList as post}"+
+							"<div class='post' onclick='expendPost(${post.id})'>"+
+								"<a href='#'>${post.topic}</a>"+
+								"<span style='margin-left:30px;'>发布者${post.author.name}</span>"+
+								"<span class='time'>发布时间${post.time|getTime}</span>"+
+								"<span style='float:right;'>${post.commentNum}个回复/${post.viewCount}个查看</span>"+
+							"</div>"+
+							"{@/each}";
+		$('.postList').removeClass('hide');
+		$('.postList').html(juicer(postTemplate,{'postList':serverData.postList}));
+	}
+	
+	updateView();
+	
+	
+	//render the view of target post
+	function expendPost(id){
+		$('.comment').addClass('hide');
+		$('.comment-btn').removeClass('hide');
+		$('.postList').addClass('hide');
+		$('.viewPost-btn').removeClass('hide');
+		var postTemplates = "<div class='title'>${topic}</div>"+
+							"<div>作者:${author.name} <span>${time|getTime}</span></div>"+
+							"<div class='content'>$${content}</div>";
+		serverData.postList.forEach(function(post){
+			if(post.id == id){
+				$('.Post').html(juicer(postTemplates,post))
+				$('.viewPost').removeClass('hide');
+				//get comments
+				//clear data
+				serverData.commentList = [];
+				serverData.commentTotalNum = 0;
+				updateComments(id);
+			}
+		})
+		
+	}
+	
+	function updateComments(id){
+		//
+		updateComments.updateView = function(){
+			console.log(serverData.commentList)
+			var commentTemp = "<span>共${totalNum}条回复</span>"+
+						"{@each commentList as comment}"+
+						"<li class='list-group-item'><span style='font-size:20px;'>${comment.author.name}</span>&nbsp;<small>${comment.time|getTime}</small><br>"+
+						"$${comment.content}</li>"+
+						"{@/each}"
+			$('ul.comments').removeClass('hide');
+			$('ul.comments').html(juicer(commentTemp,{'commentList':serverData.commentList,'totalNum':serverData.commentTotalNum}));
+		}
+		
+		
+		$('#comments\\.spinner').removeClass('hide');
+		//get head comments id
+		if( serverData.commentList.length != 0 ){
+			var beginId = serverData.commentList[0].id;
+			var endId = serverData.commentList[serverData.commentList.length-1].id;
+		}else{
+			//not comments loaded yet
+			var beginId = 0;
+			var endId = 0;
+		}
+		$.post('/getComments',{
+			target:id,
+			beginId:beginId,
+			endId:endId,
+			csrfmiddlewaretoken:"{{csrf_token}}",
+		},function(data){
+			$('#comments\\.spinner').addClass('hide');
+			if(data.message == 'OK'){
+				//add commentList to client data
+				serverData.commentList.push.apply(serverData.commentList,data.commentList);
+				//add new comments to the head of 
+				data.newCommentList.push.apply(data.newCommentList,serverData.commentList);
+				serverData.commentList = data.newCommentList;
+				serverData.commentTotalNum = data.totalNum;
+				updateComments.updateView();
+				//add scroll listener
+				$(window).unbind('scroll');
+				$(window).scroll(function() {
+					if($(window).scrollTop() + $(window).height() == $(document).height()) {
+						updateComments(id);
+					}
+				});
+			}else{
+				myNotify("错误","评论获取失败");
+			}
+		})
+	}
+	
+	function getTime(timeStramp){
+		var time = new Date();
+		time.setTime(timeStramp*1000);
+		var year = time.getFullYear();
+		var month = time.getMonth()+1;
+		var date = time.getDate();
+		var hour = time.getHours();
+		var min = time.getMinutes();
+		var sec = time.getSeconds();
+		var time = year+'/'+ month + '/' + date + ' ' +hour+':'+min+':'+sec ;
+		return time;
+	}
+
+function newPost(){
+	$('.postList').addClass('hide');
+	$('.newPost-btn').addClass('hide');
+	$('.viewPost-btn').removeClass('hide');
+	$('#newPost\\.editor').removeClass('hide');
+	newPost.send = function(){
+		var content = $("#newPost\\.content").html();
+		var topic = $("#newPost\\.topic").val();
+		$("newPost\\.spinner").removeClass('hide');
+		$.post('/newPost',{
+			content:content,
+			topic:topic,
+			csrfmiddlewaretoken:"{{csrf_token}}",
+		},function(data){
+			$("newPost\\.spinner").addClass("hide");
+			if(data.message == "OK"){
+				myNotify("成功","你的主题已经发布成功");
+				var topic = JSON.parse(data.newPost.content).topic;
+				var content = JSON.parse(data.newPost.content).content;
+				data.newPost.topic = topic;
+				data.newPost.content = content;
+				serverData.postList.unshift(data.newPost);
+				updateView();
+				
+			}else{
+				myNotify("失败","主题发布失败");
+			}
+		})
+	}
+}
+
+function viewPost(){
+	$('.newPost-btn').removeClass('hide');
+	$('.viewPost-btn').addClass('hide');
+	$('#newPost\\.editor').addClass('hide');
+	$('.viewPost').addClass('hide');
+	updateView();
+}
+</script>
+{% endblock content %}
+
+{% block loginPage %}
+<div class="modal fade" id="login.modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">登录</h4>
+      </div>
+      <div class="modal-body">
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<div class="col-sm-10">
+					<input id='login.username' type="text" class="form-control"  placeholder="用户名">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-10">
+					<input id='login.password' type="password" class="form-control" id="inputPassword3" placeholder="密码">
+					</div>
+				</div>
+			</form>
+      </div>
+      <div class="modal-footer">
+		<i class='fa fa-spinner fa-spin fa-4x pull-left hide' id='login.spinner'></i>
+        <button type="button" class="btn btn-primary" onclick='login.send()'>登录</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+	
+	function login(){
+		$('#login\\.modal').modal();
+		login.send = function(){
+			var username = $('#login\\.username').val();
+			var password = $('#login\\.password').val();
+			//check valid
+			$('#login\\.spinner').removeClass('hide');
+			$.post('/login',{
+				username:username,
+				password:password,
+				csrfmiddlewaretoken:"{{csrf_token}}",
+			},function(data){
+				$('#login\\.spinner').addClass('hide');
+				if(data.message == 'OK'){
+					myNotify("成功",'你已经成功登陆');
+					serverData.user = data.user;
+					console.log(serverData.user);
+					updateView();
+				}else{
+					myNotify("错误","用户名或密码错误");
+				}
+			})
+		}
+	}
+</script>
+{% endblock loginPage %}
+
+{% block registerPage %}
+<div class="modal fade" id="register.modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">登录</h4>
+      </div>
+      <div class="modal-body">
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<div class="col-sm-10">
+					<input id='register.username' type="text" class="form-control"  placeholder="用户名">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-10">
+					<input id='register.password' type="password" class="form-control" id="inputPassword3" placeholder="密码">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-10">
+					<input id='register.repassword' type="password" class="form-control" id="inputPassword3" placeholder="重复密码">
+					</div>
+				</div>
+			</form>
+      </div>
+      <div class="modal-footer">
+		<i class='fa fa-spinner fa-spin fa-4x pull-left hide' id='register.spinner'></i>
+        <button type="button" class="btn btn-primary" onclick='register.send()'>注册</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+	function register(){
+		$('#register\\.modal').modal();
+		register.send = function(){
+			var username = $('#register\\.username').val();
+			var password = $('#register\\.password').val();
+			var repassword = $('#register\\.repassword').val();
+			
+			var csrf_token = "{{csrf_token}}";
+			
+			//check valid
+			if(username == '' || password == ''){
+				myNotify('提示','用户名或密码不能为空');
+				return false;
+			}
+			var pattern = /^[A-Za-z0-9\u4e00-\u9fa5\s]+$/g
+			if( !pattern.test(username)){
+				myNotify('提示','用户名只能是英文字符或者汉字');
+				return false;
+			}
+			if(password != repassword){
+				myNotify("错误","两次输入的密码不一致");
+				return false;
+			}
+			
+			$('#register\\.spinner').removeClass('hide');
+			$.post('/register',{
+				username:username,
+				password:password,
+				csrfmiddlewaretoken:csrf_token,
+			},function(data){
+				$('#register\\.spinner').addClass('hide');
+				if(data.message == "OK"){
+					$('#register\\.modal').modal('hide');
+					myNotify('成功','你已经注册成功');
+					//call update view here
+					serverData.user = {
+						name:data.user.name,
+						id:data.user.id,
+					}
+				}
+				else if(data.message == 'Error' && data.reason == 'nameRepeat'){
+					myNotify('错误','这个用户已被注册');
+				}
+				else{
+					myNotify('错误','用户注册失败');
+				}
+			})
+		}
+	}
+</script>
+{% endblock registerPage %}
+
+{% block editor %}
+<style>
+	.border-gray{
+		border:solid 1px black;
+	}
+</style>
+<div id='newPost.editor' class='hide'>
+	<div class="form-group" style='margin-top:10px;'>
+		<input type="text" class="form-control" id="newPost.topic" placeholder="主题">
+	</div>
+	<div class='fullSize'>
+		<div style='margin-bottom:5px;' class='btn-toolbar fullWin' data-role='editor-toolbar' data-target='#{{prefix}}editor'>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm dropdown-toggle' data-toggle='dropdown' title='字体' id='{{prefix}}font'><i class=' fa fa-font fa-1x'></i><b class='caret'></b></a>
+			<ul class='dropdown-menu' style='overflow:auto;max-height:200px;'></ul>
+		</div>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm brn-sm dropdown-toggle' data-toggle='dropdown' title='字体大小'><i class=' fa fa-text-height'></i>&nbsp;<b class='caret'></b></a>
+			<ul class='dropdown-menu'>
+				<li><a data-edit='fontSize 7'><font size='7'>7号</font></a></li>
+				<li><a data-edit='fontSize 5'><font size='5'>5号</font></a></li>
+				<li><a data-edit='fontSize 3'><font size='3'>3号</font></a></li>
+				<li><a data-edit='fontSize 1'><font size='1'>1号</font></a></li>
+			</ul>
+		</div>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm' data-edit='bold' title='黑体 (Ctrl/Cmd+B)'><i class=' fa fa-bold'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='italic' title='斜体 (Ctrl/Cmd+I)'><i class=' fa fa-italic'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='strikethrough' title='中划线'><i class=' fa fa-strikethrough'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='underline' title='下划线(Ctrl/Cmd+U)'><i class=' fa fa-underline'></i></a>
+		</div>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm' data-edit='insertunorderedlist' title='无序列表'><i class=' fa fa-list-ul'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='insertorderedlist' title='有序列表'><i class=' fa fa-list-ol'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='outdent' title='减小缩进 (Shift+Tab)'><i class=' fa fa-indent'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='indent' title='缩进 (Tab)'><i class=' fa fa-outdent'></i></a>
+		</div>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm' data-edit='justifyleft' title='左对齐 (Ctrl/Cmd+L)'><i class=' fa fa-align-left'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='justifycenter' title='居中 (Ctrl/Cmd+E)'><i class=' fa fa-align-center'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='justifyright' title='右对齐 (Ctrl/Cmd+R)'><i class=' fa fa-align-right'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='justifyfull' title='自动 (Ctrl/Cmd+J)'><i class=' fa fa-align-justify'></i></a>
+		</div>
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm dropdown-toggle' data-toggle='dropdown' title='添加链接'><i class=' fa fa-link'></i></a>
+			<div class='dropdown-menu input-append form-inline'>
+				<input class='form-control input-sm' placeholder='URL' type='text' data-edit='createLink'/>
+				<button class='btn btn-default btn-sm pull-right' type='button'>Add</button>
+			</div>
+		</div>
+		<a class='btn btn-default btn-sm' data-edit='unlink' title='删除超链接'><i class=' fa fa-cut'></i></a>
+		<div class='btn-group' style='width:40px;'>
+			<a href='#' onclick="$(this).parent().find('input').trigger('click');return false;" class='btn btn-default btn-sm' id='pictureBtn'><i class='fa fa-picture-o'></i></a>
+			<input class='hide' type='file' accept='image/*' data-role='magic-overlay' data-target='#pictureBtn' data-edit='insertImage' />
+		</div>
+		
+		<div class='btn-group'>
+			<a class='btn btn-default btn-sm' data-edit='undo' title='撤销 (Ctrl/Cmd+Z)'><i class=' fa fa-undo'></i></a>
+			<a class='btn btn-default btn-sm' data-edit='redo' title='恢复 (Ctrl/Cmd+Y)'><i class=' fa fa-repeat'></i></a>
+		</div>
+		{% load staticfiles %}
+		<a class='btn btn-default btn-sm' data-edit='shareyan code' title='插入代码'><i class='fa fa-code'></i></a>
+		</div>
+		<div id='newPost.content'  data-shareWin='{{windowName}}' class='shareWin-editor fullSize border-gray' style='overflow:auto;min-height:200px;'>
+			{% autoescape off %}
+				{{ editorContent }}
+			{% endautoescape %}
+		</div>
+	</div>
+	<i id='newPost.spinner' class='fa fa-spinner fa-spin fa-4x hide'></i>
+	<button class='btn btn-success pull-right' style='margin-top:10px;' onclick='newPost.send()'>提交</button>
+</div>
+<script type='text/javascript' language='javascript'>
+		$(function(){
+			function initToolbarBootstrapBindings() {
+				var fonts = ['STXihei','Serif', 'Sans', 'Arial', 'Arial Black', 'Courier', 
+				'Courier New', 'Comic Sans MS', 'Helvetica', 'Impact', 'Lucida Grande', 'Lucida Sans', 'Tahoma', 'Times',
+				'Times New Roman', 'Verdana'],
+				fontTarget = $('#{{prefix}}font').siblings('.dropdown-menu');
+				font_ch = ['STXihei','STHeiti','STKaiti','STSong','STFangsong','LiHei Pro Medium','LiSong Pro Light',
+				'BiauKai','Apple LiGothic Medium','Apple LiSung Light','PMingLiU','MingLiU','DFKai-SB','SimHei','SimSun',
+				'NSimSun','FangSong','KaiTi','FangSong_GB2312','KaiTi_GB2312','Microsoft JhengHei','Microsoft YaHei',
+				'LiSu','YouYuan','STXihei','STKaiti','STSong','STZhongsong','STFangsong','FZShuTi','FZYaoti','STCaiyun',
+				'STHupo','STLiti','STXingkai','STXinwei'];
+				font_ch_name=['华文细黑','华文黑体','华文楷体','华文宋体','华文仿宋','丽黑 Pro','丽宋 Pro','标楷体','苹果丽中黑','苹果丽细宋',
+				'新细明体','细明体','标楷体','黑体','宋体','新宋体','仿宋','楷体','仿宋_GB2312','楷体_GB2312','微软正黑体','微软雅黑','隶书',
+				'幼圆','华文细黑','华文楷体','华文宋体','华文中宋','华文仿宋','方正舒体','方正姚体','华文彩云','华文琥珀','华文隶书','华文行楷',
+				'华文新魏'];
+				for(var i=0;i<font_ch.length;i++){
+					fontTarget.append($('<li><a data-edit=\"fontName ' + font_ch[i] +'\" style=\"font-family:\''+ font_ch[i] +'\">'+font_ch_name[i] + '</a></li>'));
+				}
+				$('a[title]').tooltip({container:'body'});
+				$('.dropdown-menu input').click(function() {return false;})
+				.change(function () {$(this).parent('.dropdown-menu').siblings('.dropdown-toggle').dropdown('toggle');})
+				.keydown('esc', function () {this.value='';$(this).change();});
+				$('[data-role=magic-overlay]').each(function () { 
+					var overlay = $(this), target = $(overlay.data('target')); 
+					overlay.css('opacity', 0).css('position', 'absolute').offset(target.offset()).width(target.outerWidth()).height(target.outerHeight());
+				});
+			};
+			initToolbarBootstrapBindings();
+			$('#newPost\\.content').wysiwyg();
+			window.prettyPrint && prettyPrint();
+		});
+</script>
+{% endblock editor %}

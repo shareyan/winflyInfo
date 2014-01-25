@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 import json
 
 from community.models import myUser,post,comment
@@ -19,7 +20,7 @@ def loginUser(request):
 	user = authenticate(username=username, password=password)
 	if user != None:
 		login(request, user)
-		return HttpResponse(json.dumps({'message':'OK'}),content_type='application/json')
+		return HttpResponse(json.dumps({'message':'OK','user':{'name':user.username,'id':user.pk}}),content_type='application/json')
 	else:
 		return HttpResponse(json.dumps({'message':'Error','reason':'error'}),content_type='application/json')
 	
@@ -45,40 +46,55 @@ def register(request):
 	
 def community(request):
 	#get latest posts
-	res = getLatestPost(1)
+	res = getLatestPost(0,0)
 	return render(request,templateDir +'community.html',
 			   {'postList':res['postList'],
-				'totalPageNum':res['res']['totalPageNum'],
-				'pageList':res['res']['pageList'],
-				'startNum':res['res']['startNum'],
-				'endNum':res['res']['endNum'],
-				'currentPage':1,
+				'totalNum':res['totalNum'],
 				})
-	
+
+def getPost(request):
+	beginId = request.POST['beginId']
+	endId = request.POST['endId']
+	res = getLatestPost(beginId,endId)
+	res['message'] = 'OK'
+	return HttpResponse(json.dumps(res),content_type='application/json')
+
 	
 def newPost(request):
 	if request.method != "POST":
 		return HttpResponse(json.dumps({'message':'Error','reason':'wrong request method'}),content_type='application/json')
 	content = request.POST['content']
 	topic = request.POST['topic']
+	myPost = post()
 	if request.user.is_authenticated():
 		comUser = myUser.objects.get(user=request.user)
-		myPost = post()
 		myPost.author = comUser
 	myPost.content = json.dumps({'topic':topic,'content':content})
 	myPost.save()
 	return HttpResponse(json.dumps({'message':'OK','newPost':myPost.getInfo()}),content_type='application/json')
 
 
-def getLatestPost(pageNum):
+def getLatestPost(beginId,endId):
 	totalPost = post.objects.all().order_by('-time')
 	totalNum = totalPost.count()
-	res = getPageList(totalNum,pageNum)
-	resPostList = totalPost[res['startNum']:res['endNum']]
+	if beginId == 0 and endId == 0:
+		postList = []
+		newPostList = []
+		targetList = totalPost[:10]
+		for mypost in targetList:
+			postList.append(mypost.getInfo())
+		return {'postList':postList,'newPostList':newPostList,'totalNum':totalNum}
+	beginPost = post.objects.get(pk=beginId)
+	endPost = post.objects.get(pk=endId)
+	targetNewPost = totalPost.filter(time__gt=beginPost.time)
+	targetOldPost = totalPost.filter(time__lt=endPost.time)
 	postList = []
-	for mypost in resPostList:
+	newPostList = []
+	for mypost in targetNewPost:
+		newPostList.append(mypost.getInfo())
+	for mypost in targetOldPost:
 		postList.append(mypost.getInfo())
-	return {'postList':postList,'res':res}
+	return {'postList':postList,'newPostList':newPostList,'totalNum':totalNum}
 
 def getPageList(totalNum,pageNum,pageItemsNum=10):
 	totalNum = int(totalNum)
@@ -167,3 +183,10 @@ def getLatestComments(beginId,endId,post):
 	res['newCommentList'] = newComment
 	res['totalNum'] = totalNum
 	return res
+
+@csrf_exempt
+def logoutUser(request):
+	if request.method != "POST":
+		return HttpResponse(json.dumps({'message':'Error','reason':'wrong request method'}),content_type='application/json')
+	logout(request)
+	return HttpResponse(json.dumps({'message':'OK'}),content_type='application/json')

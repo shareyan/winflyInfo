@@ -1,5 +1,13 @@
 {% extends 'community/templates/base.html' %}
 
+{% block header %}
+<div class="jumbotron jumbotron-ad hidden-print" style='color:white;'>
+  <div class="container">
+    <h1><i class="fa fa-group"></i>&nbsp; 社区</h1>
+    <p>pCloud的社区,有什么意见和建议欢迎在这里提出我们会很快回应的。</p>
+  </div>
+</div>
+{% endblock header %}
 
 {% block content %}
 
@@ -58,7 +66,7 @@
 	</div>
 	<div class='comment hide'>
 		<textarea id='comments.content' style='width:100%;height:100px;border:solid 1px;'></textarea>
-		<button class='btn btn-success col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments(1)'>确认</button>
+		<button class='btn btn-success col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments()'>确认</button>
 		<button class='btn btn-primary col-lg-12 col-md-12 col-xs-12' style='margin:5px 0px 5px 0px;' onclick='sendComments.cancel()'>取消</button>
 	</div>
 	<i class='fa fa-spinner fa-spin fa-4x hide' id='comments.spinner'></i>
@@ -68,20 +76,19 @@
 </div>
 
 <script>
-	function myNotify(title,content){
-		Stashy.Notify({
-			title : title,
-			content : content,
-			titleSize : 4,
-			style : "default",
-			contentType : "inline",
-			animDuration : "fast",
-			closeArea : "element"
-		}).toast("right", "top", true);
+
+	function getName(name){
+		if(name != ''){
+			return name;
+		}else{
+			return '匿名用户';
+		}
 	}
 	
-	function sendComments(id){
-		
+	juicer.register('getName',getName);
+	
+	function sendComments(){
+		var id = serverData.currentPostId;
 		var content = $("#comments\\.content").val();
 		if(content == '' || typeof content == 'undefined'){
 			myNotify('错误','评论不能为空');
@@ -128,19 +135,12 @@
 			},
 		{% endfor %}
 	];
-	serverData.totalPageNum = {{totalPageNum}};
-	serverData.pageList = [
-		{% for page in pageList %}
-			{{page}},
-		{% endfor %}
-	];
-	serverData.startNum = {{startNum}};
-	serverData.endNum = {{endNum}};
-	serverData.currentPage = {{currentPage}};
+	
+	serverData.totalNum = {{totalNum}};
 	//not user info without login
 	serverData.user = {
 		name:"{{user.username}}",
-		id:{{user.pk}},
+		id:"{{user.pk}}",
 	};
 	serverData.commentList = [];
 	{% endautoescape %}
@@ -150,23 +150,93 @@
 	function updateView(){
 		$('#newPost\\.editor').addClass('hide');
 	
-		if(serverData.user != ''){
+		if(serverData.user != '' && serverData.user.name != '' ){
 			//user has login
-			var templates = "<li><a href='#'>${name}</a></li>";
+			var templates = "<li class='dropdown'>"+
+								"<a data-toggle='dropdown' href='#'>${name}</a>"+
+								"<ul class='dropdown-menu' role='menu' aria-labelledby='dLabel'>"+
+									"<li><a href='#' onclick='logout();'>注销</a></li>"+
+								"</ul>"+
+							"</li>";
 			$('.navbar-right').html(juicer(templates,{'name':serverData.user.name}));
+		}else{
+			var templates = "<li><a href='#' onclick='login();return false;'>登陆</a></li>"+
+							"<li><a href='#' onclick='register();return false;'>注册</a></li>";
+			$('.navbar-right').html(templates);
 		}
 		
 		juicer.register('getTime', getTime);
-		var postTemplate =  "{@each postList as post}"+
-							"<div class='post' onclick='expendPost(${post.id})'>"+
-								"<a href='#'>${post.topic}</a>"+
-								"<span style='margin-left:30px;'>发布者${post.author.name}</span>"+
-								"<span class='time'>发布时间${post.time|getTime}</span>"+
-								"<span style='float:right;'>${post.commentNum}个回复/${post.viewCount}个查看</span>"+
-							"</div>"+
-							"{@/each}";
+		var postTemplate = ""+
+		"<span>共${totalNum}个主题</span>"+
+		"<div class='table-responsive'>"+
+			"<table class='table table-hover'>"+
+				"<thead>"+
+				"<tr>"+
+					"<th><span>主题</span></th>"+
+					"<th><span>作者</span></th>"+
+					"<th><span>回复/查看</span></th>"+
+					"<th><span>发布时间</span></th>"+
+				"</tr>"+
+				"</thead>"+
+				"<tbody class='content'>"+
+					"{@each postList as post}"+
+						"<tr class='post' onclick='expendPost(${post.id})'>"+
+							"<td><a style='display:block;color:black;font-size:14px;text-decoration:none;padding:10px;' href='#'>${post.topic}</a></td>"+
+							"<td><span style='color:black;font-size:14px;padding:10px;'>${post.author.name|getName}</span></td>"+
+							"<td><span style='color:black;font-size:14px;padding:10px;'>${post.time|getTime}</span></td>"+
+							"<td><span style='color:black;font-size:14px;padding:10px;'>${post.commentNum}个回复/${post.viewCount}个查看</span></td>"+
+						"</tr>"+
+					"{@/each}"+
+				"</tbody>"+
+			"</table>"+
+			"<i class='fa fa-spinner fa-spin fa-4x hide postList'></i>"+
+		"</div>";
+		
 		$('.postList').removeClass('hide');
-		$('.postList').html(juicer(postTemplate,{'postList':serverData.postList}));
+		$('.postList').html(juicer(postTemplate,{'postList':serverData.postList,'totalNum':serverData.totalNum}));
+		//add scroll listener
+		$(window).unbind('scroll');
+		$(window).scroll(function() {
+			if($(window).scrollTop() + $(window).height() == $(document).height()) {
+				updatePost();
+			}
+		});
+		
+	}
+	
+	function updatePost(){
+		$('.postList.fa-spinner').removeClass('hide');
+		if(serverData.postList.length == 0 || typeof serverData.postList == 'undefined'){
+			var beginId = 0;
+			var endId = 0;
+		}else{
+			var beginId = serverData.postList[0].id;
+			var endId = serverData.postList[serverData.postList.length-1].id;
+		}
+		$.post('/getPost',{
+			beginId:beginId,
+			endId:endId,
+			csrfmiddlewaretoken:"{{csrf_token}}",
+		},function(data){
+			if(data.message == 'OK'){
+				for(var count = 0;count<data.postList.length;count++){
+					data.postList[count].topic = JSON.parse(data.postList[count].content).topic;
+					data.postList[count].content = JSON.parse(data.postList[count].content).content;
+				}
+				for(var count = 0;count<data.newPostList.length;count++){
+					data.newPostList[count].topic = JSON.parse(data.newPostList[count].content).topic;
+					data.newPostList[count].content = JSON.parse(data.newPostList[count].content).content;
+				}
+				//data.content = JSON.parse(data.content).content;
+				serverData.postList.push.apply(serverData.postList,data.postList);
+				data.newPostList.push.apply(data.newPostList,serverData.postList);
+				serverData.postList = data.newPostList;
+				serverData.totalNum = data.totalNum;
+				updateView();
+			}else{
+				myNotify('错误',"获取主题失败")
+			}
+		})
 	}
 	
 	updateView();
@@ -189,6 +259,7 @@
 				//clear data
 				serverData.commentList = [];
 				serverData.commentTotalNum = 0;
+				serverData.currentPostId = id;
 				updateComments(id);
 			}
 		})
@@ -201,7 +272,7 @@
 			console.log(serverData.commentList)
 			var commentTemp = "<span>共${totalNum}条回复</span>"+
 						"{@each commentList as comment}"+
-						"<li class='list-group-item'><span style='font-size:20px;'>${comment.author.name}</span>&nbsp;<small>${comment.time|getTime}</small><br>"+
+						"<li class='list-group-item'><span style='font-size:20px;'>${comment.author.name|getName}</span>&nbsp;<small>${comment.time|getTime}</small><br>"+
 						"$${comment.content}</li>"+
 						"{@/each}"
 			$('ul.comments').removeClass('hide');
@@ -261,6 +332,7 @@
 	}
 
 function newPost(){
+	$('.viewPost').addClass('hide');
 	$('.postList').addClass('hide');
 	$('.newPost-btn').addClass('hide');
 	$('.viewPost-btn').removeClass('hide');
@@ -268,13 +340,17 @@ function newPost(){
 	newPost.send = function(){
 		var content = $("#newPost\\.content").html();
 		var topic = $("#newPost\\.topic").val();
-		$("newPost\\.spinner").removeClass('hide');
+		if(content == '' || topic == ''){
+			myNotify("提示","内容不能为空");
+			return;
+		}
+		$("#newPost\\.spinner").removeClass('hide');
 		$.post('/newPost',{
 			content:content,
 			topic:topic,
 			csrfmiddlewaretoken:"{{csrf_token}}",
 		},function(data){
-			$("newPost\\.spinner").addClass("hide");
+			$("#newPost\\.spinner").addClass("hide");
 			if(data.message == "OK"){
 				myNotify("成功","你的主题已经发布成功");
 				var topic = JSON.parse(data.newPost.content).topic;
@@ -349,6 +425,7 @@ function viewPost(){
 				$('#login\\.spinner').addClass('hide');
 				if(data.message == 'OK'){
 					myNotify("成功",'你已经成功登陆');
+					$('#login\\.modal').modal('hide');
 					serverData.user = data.user;
 					console.log(serverData.user);
 					updateView();
@@ -357,6 +434,18 @@ function viewPost(){
 				}
 			})
 		}
+	}
+	
+	function logout(){
+		$.post('/logout',{
+			csrfmiddlewaretoken:"{{csrf_token}}",
+		},function(data){
+			if(data.message == "OK"){
+				//clear server data
+				serverData.user = '';
+				updateView();
+			}
+		})
 	}
 </script>
 {% endblock loginPage %}

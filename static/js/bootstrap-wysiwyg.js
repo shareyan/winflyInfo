@@ -119,7 +119,13 @@
 						$.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
 							console.log(dataUrl);
 							var timestrap = (new Date()).valueOf();
-							var image = "<img id='img"+timestrap+"' src="+dataUrl+"  style='max-width:800px;resize:both;overflow:auto;'/>";
+							var img = new Image();
+							img.src=dataUrl;
+							if(img.width <800){
+								var image = "<img id='img"+timestrap+"' src='"+dataUrl+"'/>";
+							}else{
+								var image = "<img id='img"+timestrap+"' src='"+dataUrl+"'  class='insert-img'/>";
+							}
 							execCommand('insertHTML', image);
 						}).fail(function (e) {
 							options.fileUploadError("file-reader", e);

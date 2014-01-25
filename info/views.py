@@ -9,3 +9,9 @@ def getStarted(request):
 
 def manual(request):
 	return render(request,'manual.html')
+
+def license(request):
+	return render(request,'license.html')
+
+def about(request):
+	return render(request,'about.html')

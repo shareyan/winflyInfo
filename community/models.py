@@ -11,14 +11,17 @@ class myUser(models.Model):
 	
 class post(models.Model):
 	time = models.DateTimeField(auto_now_add=True, blank=True)
-	author = models.ForeignKey(myUser,related_name='postAuthor')
+	author = models.ForeignKey(myUser,related_name='postAuthor',blank=True,null=True)
 	content = models.TextField()
 	viewCount = models.IntegerField(default=0)
 	commentNum = models.IntegerField(default=0)
 	def getInfo(self):
 		info = {}
 		info['time'] = format(self.time, 'U')
-		info['author'] = {'name':self.author.user.username,'id':self.author.user.pk}
+		if self.author != None:
+			info['author'] = {'name':self.author.user.username,'id':self.author.user.pk}
+		else:
+			info['author'] = {'name':'','id':'None'}
 		info['content'] = self.content
 		info['viewCount'] = self.viewCount
 		info['commentNum'] = self.commentNum
@@ -35,6 +38,9 @@ class comment(models.Model):
 		info['post'] = self.post.pk
 		info['time'] = format(self.time, 'U')
 		info['content'] = self.content
-		info['author'] = {'name':self.author.user.username,'id':self.author.user.pk}
+		if self.author != None:
+			info['author'] = {'name':self.author.user.username,'id':self.author.user.pk}
+		else:
+			info['author'] = {'name':'','id':'None'}
 		info['id'] = self.pk
 		return info

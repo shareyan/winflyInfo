@@ -21,15 +21,14 @@ body{
 	color:gray;
 }
 
-.table-responsive{
-	overflow-x:auto !important;
-}
+
 .nav>a:hover {
 	background-color:gray;
 }
 th {
 	height:30px;
 	padding:5px;
+	text-align:center;
 }
 th>a{
 	color:gray;
@@ -52,6 +51,7 @@ th>a:hover{
 
 td{
 	vertical-align:middle !important;
+	text-align:center;
 }
 
 td>a:hover{
@@ -219,4 +219,32 @@ ul{
 
 ul.doc>li{
 	padding:5px;
+}
+
+
+.insert-img{
+	max-width:800px;
+	display: block;
+	margin: 0 auto;
+	width: 100%;
+	height: auto;
+	padding: 4px;
+	line-height: 1.428571429;
+	background-color: hsl(0, 100%, 100%);
+	border: 1px solid hsl(0, 0%, 87%);
+	border-radius: 4px;
+	-webkit-transition: all .2s ease-in-out;
+	transition: all .2s ease-in-out;
+}
+
+.toTop{
+	position: fixed;
+	bottom: 100px;
+	right: 50px;
+	z-index: 100;
+	color:black;
+}
+
+.toTop:hover{
+	background:none;
 }

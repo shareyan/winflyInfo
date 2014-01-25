@@ -115,14 +115,14 @@ p code {
   font-family: Consolas, "Liberation Mono", Courier, monospace;
 }
 
-h2 {
+/*h2 {
   text-align: center;
   font-weight: 200;
   line-height: 38px;
   margin: 40px auto 0;
   font-size: 21px;
   max-width: 740px;
-}
+}*/
 
 .page h1.title { margin-top: 25px; }
 

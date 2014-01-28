@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>我的收藏</title>
+		<link rel="icon" href="/static/img/logo.jpg" type="image/x-icon" />
+		<link rel="shortcut icon" href="/static/img/logo.jpg" type="image/x-icon" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="apple-touch-icon" sizes="114x114" href="/static/img/touch-icon-114x114.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="/static/img/touch-icon-72x72.png" />
+		<link rel="apple-touch-icon" href="/static/img/touch-icon-iphone.png" />
+		
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png" />
+		<link rel="apple-touch-icon-precomposed" href="/static/img/touch-icon-iphone.png" />
+		
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<script src='/static/js/jquery-1.10.2.min.js'></script>
+		<script src='/static/js/juicer.js'></script>
+		<link rel='stylesheet' href='/static/css/font-awesome-4.0.3/css/font-awesome.css'>
+		<link rel='stylesheet' href='/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap.min.css'>
+		<link rel='stylesheet' href='/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap-theme.min.css'>
+		<link rel='stylesheet' href='/static/css/Stashy/Stashy.min.css'>
+		<link rel='stylesheet' href='/static/css/pages.css'>
+		<link rel='stylesheet' href='/static/css/style.css'>
+		<script src='/static/js/bootstrap-3.0.3-dist/dist/js/bootstrap.min.js'></script>
+		<script src='/static/js/Stashy/Stashy.min.js'></script>
+		<script src='/static/js/history.js'></script>
+
+		<script src='/static/js/jquery.hotkeys.js'></script>
+		<script src='/static/js/bootstrap-wysiwyg.js'></script>
+	</head>
+	<body>
+		<style>
+			.fa-times{
+				font-size:20px;
+				color:gray;
+			}
+		</style>
+		<div class='container'>
+			<h1>我的收藏</h1>
+			<p>输入目标的名字就可以访问了</p>
+			<div class='row' style=''>
+				<div class='col-xs-10 col-sm-11'>
+				<input class='form-control' type='text' placeholder='目标' id='record.input'>
+				</div>
+				<button class='btn btn-success col-xs-2 col-sm-1' onclick='gobtn()'>Go</button>
+			</div>
+			
+			<ul class="list-group" style='margin-top:10px;'>
+			</ul>
+		</div>
+		<script>
+			var serverDate = {};
+			serverDate.record = [
+				{% for target in targetList %}
+					'{{target}}',
+				{% endfor %}
+			];
+			
+			$('#record\\.input').on('input',function(){
+				updateView();
+				console.log('changed');
+			})
+			
+			$(document).on('click','.fa-times',function(){
+				console.log('clicked');
+				var target = $(this).data('target');
+				if(serverDate.record.indexOf(target) != -1){
+					//delete target from serverDate
+					serverDate.record.splice(serverDate.record.indexOf(target),1);
+					$.post('/delete',{
+						target:target,
+						csrfmiddlewaretoken:"{{csrf_token}}",
+					},function(data){
+						//do nothing
+						console.log(data);
+					})
+				}
+				updateView();
+				return false;
+			})
+			
+			function go(target){
+				$.post('/add',{
+					target:target,
+					csrfmiddlewaretoken:"{{csrf_token}}",
+				},function(data){
+					console.log(data);
+					window.location.href = 'http://shareyan.cn/cloud/'+target;
+				})
+			}
+			
+			function gobtn(){
+				var target = $('#record\\.input').val();
+				go(target);
+			}
+			
+			$(document).on('click','.list-group-item',function(){
+				var target = $(this).data('target');
+				go(target);
+			})
+			
+			
+			function updateView(){
+				var target = $('#record\\.input').val();
+				var viewList = [];
+				serverDate.record.forEach(function(favRec){
+					if(favRec.indexOf(target) != -1){
+						viewList.push(favRec);
+					}
+				})
+				viewList.sort(function(a,b){
+					return a.indexOf(target)-b.indexOf(target);
+				})
+				$('.list-group').html("");
+				viewList.forEach(function(favRec){
+					$('.list-group').append("<li class='list-group-item' data-target='"+favRec+"'>"+ favRec +"<i class='fa fa-times pull-right' data-target='"+favRec+"'></i></li>");
+				})
+				
+			}
+			updateView();
+		</script>
+	</body>
+</html>

@@ -4,6 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 import info.views as info
 import community.views as community
+import favourite.views as fav
 
 urlpatterns = patterns('',
     # Examples:
@@ -25,4 +26,8 @@ urlpatterns = patterns('',
     url(r'^about$',info.about),
     url(r'^logout$',community.logoutUser),
     url(r'^doc$',info.index),
+    url(r'^$',info.index),
+    url(r'^me$',fav.Record),
+    url(r'^add$',fav.add),
+    url(r'^delete',fav.delete),
 )

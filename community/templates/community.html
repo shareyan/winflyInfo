@@ -97,7 +97,7 @@
 		$.post('/comment',{
 			target:id,
 			content:content,
-			csrfmiddlewaretoken:"{{csrf_token}}",
+			csrfmiddlewaretoken:serverData.csrf_token,
 		},function(data){
 			if(data.message =="OK"){
 				myNotify("成功","评论已经发表");
@@ -135,6 +135,8 @@
 			},
 		{% endfor %}
 	];
+	
+	serverData.csrf_token = "{{csrf_token}}";
 	
 	serverData.totalNum = {{totalNum}};
 	//not user info without login
@@ -216,7 +218,7 @@
 		$.post('/getPost',{
 			beginId:beginId,
 			endId:endId,
-			csrfmiddlewaretoken:"{{csrf_token}}",
+			csrfmiddlewaretoken:serverData.csrf_token,
 		},function(data){
 			if(data.message == 'OK'){
 				for(var count = 0;count<data.postList.length;count++){
@@ -294,7 +296,7 @@
 			target:id,
 			beginId:beginId,
 			endId:endId,
-			csrfmiddlewaretoken:"{{csrf_token}}",
+			csrfmiddlewaretoken:serverData.csrf_token,
 		},function(data){
 			$('#comments\\.spinner').addClass('hide');
 			if(data.message == 'OK'){
@@ -337,6 +339,8 @@ function newPost(){
 	$('.newPost-btn').addClass('hide');
 	$('.viewPost-btn').removeClass('hide');
 	$('#newPost\\.editor').removeClass('hide');
+	//remove scroll listener
+	$(window).unbind('scroll');
 	newPost.send = function(){
 		var content = $("#newPost\\.content").html();
 		var topic = $("#newPost\\.topic").val();
@@ -348,7 +352,7 @@ function newPost(){
 		$.post('/newPost',{
 			content:content,
 			topic:topic,
-			csrfmiddlewaretoken:"{{csrf_token}}",
+			csrfmiddlewaretoken:serverData.csrf_token,
 		},function(data){
 			$("#newPost\\.spinner").addClass("hide");
 			if(data.message == "OK"){
@@ -420,7 +424,7 @@ function viewPost(){
 			$.post('/login',{
 				username:username,
 				password:password,
-				csrfmiddlewaretoken:"{{csrf_token}}",
+				csrfmiddlewaretoken:serverData.csrf_token,
 			},function(data){
 				$('#login\\.spinner').addClass('hide');
 				if(data.message == 'OK'){
@@ -438,7 +442,7 @@ function viewPost(){
 	
 	function logout(){
 		$.post('/logout',{
-			csrfmiddlewaretoken:"{{csrf_token}}",
+			csrfmiddlewaretoken:serverData.csrf_token,
 		},function(data){
 			if(data.message == "OK"){
 				//clear server data
@@ -456,7 +460,7 @@ function viewPost(){
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">登录</h4>
+        <h4 class="modal-title">注册</h4>
       </div>
       <div class="modal-body">
 			<form class="form-horizontal" role="form">
@@ -495,8 +499,6 @@ function viewPost(){
 			var password = $('#register\\.password').val();
 			var repassword = $('#register\\.repassword').val();
 			
-			var csrf_token = "{{csrf_token}}";
-			
 			//check valid
 			if(username == '' || password == ''){
 				myNotify('提示','用户名或密码不能为空');
@@ -516,7 +518,7 @@ function viewPost(){
 			$.post('/register',{
 				username:username,
 				password:password,
-				csrfmiddlewaretoken:csrf_token,
+				csrfmiddlewaretoken:serverData.csrf_token,
 			},function(data){
 				$('#register\\.spinner').addClass('hide');
 				if(data.message == "OK"){
@@ -527,6 +529,8 @@ function viewPost(){
 						name:data.user.name,
 						id:data.user.id,
 					}
+					serverData.csrf_token = data.token;
+					updateView();
 				}
 				else if(data.message == 'Error' && data.reason == 'nameRepeat'){
 					myNotify('错误','这个用户已被注册');

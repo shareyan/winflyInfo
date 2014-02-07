@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from django.middleware.csrf import get_token
 from community.models import myUser,post,comment
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
@@ -36,10 +36,13 @@ def register(request):
 		comUser.type = 'local'
 		comUser.oaId = 0
 		comUser.save()
+		user = authenticate(username=username, password=password)
+		login(request, user)
 		userInfo = {};
 		userInfo['name'] = comUser.user.username
 		userInfo['id'] = comUser.user.pk
-		return HttpResponse(json.dumps({'message':'OK','user':userInfo}),content_type='application/json')
+		token = get_token(request)
+		return HttpResponse(json.dumps({'message':'OK','user':userInfo,'token':token}),content_type='application/json')
 	else:
 		return HttpResponse(json.dumps({'message':'Error','reason':'wrong request method'}))
 	
@@ -78,6 +81,8 @@ def newPost(request):
 def getLatestPost(beginId,endId):
 	totalPost = post.objects.all().order_by('-time')
 	totalNum = totalPost.count()
+	beginId = int(beginId)
+	endId = int(endId)
 	if beginId == 0 and endId == 0:
 		postList = []
 		newPostList = []

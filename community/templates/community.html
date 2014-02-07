@@ -431,7 +431,7 @@ function viewPost(){
 					myNotify("成功",'你已经成功登陆');
 					$('#login\\.modal').modal('hide');
 					serverData.user = data.user;
-					console.log(serverData.user);
+					serverData.csrf_token = data.token;
 					updateView();
 				}else{
 					myNotify("错误","用户名或密码错误");
@@ -447,6 +447,7 @@ function viewPost(){
 			if(data.message == "OK"){
 				//clear server data
 				serverData.user = '';
+				serverData.csrf_token = data.token;
 				updateView();
 			}
 		})

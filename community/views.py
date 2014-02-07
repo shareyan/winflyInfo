@@ -20,7 +20,8 @@ def loginUser(request):
 	user = authenticate(username=username, password=password)
 	if user != None:
 		login(request, user)
-		return HttpResponse(json.dumps({'message':'OK','user':{'name':user.username,'id':user.pk}}),content_type='application/json')
+		token = get_token(request)
+		return HttpResponse(json.dumps({'message':'OK','user':{'name':user.username,'id':user.pk},'token':token}),content_type='application/json')
 	else:
 		return HttpResponse(json.dumps({'message':'Error','reason':'error'}),content_type='application/json')
 	
@@ -195,4 +196,5 @@ def logoutUser(request):
 	if request.method != "POST":
 		return HttpResponse(json.dumps({'message':'Error','reason':'wrong request method'}),content_type='application/json')
 	logout(request)
-	return HttpResponse(json.dumps({'message':'OK'}),content_type='application/json')
+	token = get_token(request)
+	return HttpResponse(json.dumps({'message':'OK','token':token}),content_type='application/json')

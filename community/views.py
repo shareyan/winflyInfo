@@ -50,6 +50,7 @@ def community(request):
 	return render(request,templateDir +'community.html',
 			   {'postList':res['postList'],
 				'totalNum':res['totalNum'],
+				'CommunityPage':True,
 				})
 
 def getPost(request):

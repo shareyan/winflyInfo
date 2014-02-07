@@ -7,26 +7,43 @@
 {% endblock homeClass %}
 
 {% block header %}
-<div class="jumbotron jumbotron-ad hidden-print">
+<!--<div class="jumbotron jumbotron-ad hidden-print">
   <div class="container" style='color:white;'>
     <h1><i class='fa fa-rocket'></i>Winfly</h1>
-    <p>让你的电脑变成你的私有云 —— Winfly 1.0.2a</p>
+    <p>方便快速的共享你的文件 —— Winfly</p>
 	<a class="btn btn-lg btn-primary btn-shadow bs3-link" href="http://pan.baidu.com/s/1gd1dh5L" target="_blank" role="button"><i class='fa fa-download'></i> Winfly 1.0.2a 下载</a>
   </div>
-</div>
+</div>-->
 {% endblock header %}
 {% block content %}
 	<style>
 		.feature>.col-md-4{
 			margin-bottom:22px;
 		}
+		.home-header{
+			display: block;
+			text-align: center;
+			font-size: 50px;
+			margin: 30px;
+		}
+		.download-btn{
+			
+		}
+		.stripe-ad{
+			text-align:center;
+		}
 	</style>
+	<div class="stripe-ad">
+		<span class='home-header'>winfly 快速共享你的文件</span>
+		<a class="btn btn-lg btn-primary download-btn" href="http://pan.baidu.com/s/1gd1dh5L" target="_blank" role="button"><i class='fa fa-download'></i> Winfly下载</a>
+		<div class='doc-img'>
+			<img class='img-thumbnail' src='/static/img/docs/crossPlatform.jpg'>
+			<span>设置共享文件夹</span>
+		</div>
+	</div>
 	<div class='container'>
 		<section class="hidden-print">
-			<div class="stripe-ad">
-				<h3 class='page-header'>什么是Winfly</h3>
-				这里应该采用介绍图片
-			</div>
+			
 		</section>
 		<section>
 		<h3 class='page-header'>Winfly的特点</h3>

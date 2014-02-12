@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.http import HttpResponse
 # Create your views here.
 def index(request):
 	return render(request,'home.html')
@@ -15,3 +15,7 @@ def license(request):
 
 def about(request):
 	return render(request,'about.html')
+
+def sitemap(request):
+	sitemapData = open("sitemap.xml", "rb").read()
+	return HttpResponse(sitemapData,content_type='application/xml')

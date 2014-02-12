@@ -30,4 +30,5 @@ urlpatterns = patterns('',
     url(r'^me$',fav.Record),
     url(r'^add$',fav.add),
     url(r'^delete',fav.delete),
+    url(r'^sitemap.xml',info.sitemap),
 )

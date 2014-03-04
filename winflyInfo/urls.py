@@ -31,4 +31,5 @@ urlpatterns = patterns('',
     url(r'^add$',fav.add),
     url(r'^delete',fav.delete),
     url(r'^sitemap.xml',info.sitemap),
+    url(r'^download',info.download),
 )

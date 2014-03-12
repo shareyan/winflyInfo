@@ -2,32 +2,32 @@
 <html>
 	<head>
 		<title>我的收藏</title>
-		<link rel="icon" href="/static/img/logo.jpg" type="image/x-icon" />
-		<link rel="shortcut icon" href="/static/img/logo.jpg" type="image/x-icon" />
+		<link rel="icon" href="http://winfly.shareyan.cn/static/img/logo.jpg" type="image/x-icon" />
+		<link rel="shortcut icon" href="http://winfly.shareyan.cn/static/img/logo.jpg" type="image/x-icon" />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<link rel="apple-touch-icon" sizes="114x114" href="/static/img/touch-icon-114x114.png" />
-		<link rel="apple-touch-icon" sizes="72x72" href="/static/img/touch-icon-72x72.png" />
-		<link rel="apple-touch-icon" href="/static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="http://winfly.shareyan.cn/static/img/touch-icon-114x114.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="http://winfly.shareyan.cn/static/img/touch-icon-72x72.png" />
+		<link rel="apple-touch-icon" href="http://winfly.shareyan.cn/static/img/touch-icon-iphone.png" />
 		
-		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png" />
-		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png" />
-		<link rel="apple-touch-icon-precomposed" href="/static/img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://winfly.shareyan.cn/static/img/apple-touch-icon-114x114.png" />
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://winfly.shareyan.cn/static/img/apple-touch-icon-72x72.png" />
+		<link rel="apple-touch-icon-precomposed" href="http://winfly.shareyan.cn/static/img/touch-icon-iphone.png" />
 		
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<script src='/static/js/jquery-1.10.2.min.js'></script>
-		<script src='/static/js/juicer.js'></script>
-		<link rel='stylesheet' href='/static/css/font-awesome-4.0.3/css/font-awesome.css'>
-		<link rel='stylesheet' href='/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap.min.css'>
-		<link rel='stylesheet' href='/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap-theme.min.css'>
-		<link rel='stylesheet' href='/static/css/Stashy/Stashy.min.css'>
-		<link rel='stylesheet' href='/static/css/pages.css'>
-		<link rel='stylesheet' href='/static/css/style.css'>
-		<script src='/static/js/bootstrap-3.0.3-dist/dist/js/bootstrap.min.js'></script>
-		<script src='/static/js/Stashy/Stashy.min.js'></script>
-		<script src='/static/js/history.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/jquery-1.10.2.min.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/juicer.js'></script>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/font-awesome-4.0.3/css/font-awesome.css'>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap.min.css'>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/bootstrap-3.0.3-dist/dist/css/bootstrap-theme.min.css'>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/Stashy/Stashy.min.css'>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/pages.css'>
+		<link rel='stylesheet' href='http://winfly.shareyan.cn/static/css/style.css'>
+		<script src='http://winfly.shareyan.cn/static/js/bootstrap-3.0.3-dist/dist/js/bootstrap.min.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/Stashy/Stashy.min.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/history.js'></script>
 
-		<script src='/static/js/jquery.hotkeys.js'></script>
-		<script src='/static/js/bootstrap-wysiwyg.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/jquery.hotkeys.js'></script>
+		<script src='http://winfly.shareyan.cn/static/js/bootstrap-wysiwyg.js'></script>
 	</head>
 	<body>
 		<style>
@@ -105,6 +105,8 @@
 				var target = $('#record\\.input').val();
 				var viewList = [];
 				serverDate.record.forEach(function(favRec){
+					console.log(favRec);
+					console.log(target);
 					if(favRec.indexOf(target) != -1){
 						viewList.push(favRec);
 					}
@@ -114,7 +116,7 @@
 				})
 				$('.list-group').html("");
 				viewList.forEach(function(favRec){
-					$('.list-group').append("<li class='list-group-item' data-target='"+favRec+"'>"+ favRec +"<i class='fa fa-times pull-right' data-target='"+favRec+"'></i></li>");
+					$('.list-group').append("<li class='list-group-item' data-target='"+favRec+"'>"+ favRec +"<i class='fa fa-times pull-right' style='margin:-10px;font-size:40px;' data-target='"+favRec+"'></i></li>");
 				})
 				
 			}

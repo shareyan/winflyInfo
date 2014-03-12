@@ -19,8 +19,9 @@ def add(request):
 		request.session['targetList'] = json.dumps([])
 	targetList = json.loads(request.session['targetList'])
 	target = request.POST['target']
-	targetList.append(target)
-	request.session['targetList'] = json.dumps(targetList)
+	if target not in targetList:
+		targetList.append(target)
+		request.session['targetList'] = json.dumps(targetList)
 	return HttpResponse(json.dumps({'message':'OK'}),content_type='application/json')
 
 def delete(request):

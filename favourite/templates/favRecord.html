@@ -35,6 +35,25 @@
 				font-size:20px;
 				color:gray;
 			}
+			
+			.go{
+				width:80%;
+				display:inline-block;
+			}
+			.del{
+				width:20%;
+				display:inline-block;
+			}
+			
+			a:hover{
+				background-color:white;
+				text-decoration:none;
+			}
+			a{
+				color:gray;
+				text-decoration:none;
+			}
+			
 		</style>
 		<div class='container'>
 			<h1>我的收藏</h1>
@@ -62,8 +81,8 @@
 				console.log('changed');
 			})
 			
-			$(document).on('click','.fa-times',function(){
-				console.log('clicked');
+			$(document).on('click','.del',function(e){
+				e.preventDefault();
 				var target = $(this).data('target');
 				if(serverDate.record.indexOf(target) != -1){
 					//delete target from serverDate
@@ -95,7 +114,8 @@
 				go(target);
 			}
 			
-			$(document).on('click','.list-group-item',function(){
+			$(document).on('click','.go',function(e){
+				e.preventDefault();
 				var target = $(this).data('target');
 				go(target);
 			})
@@ -105,8 +125,6 @@
 				var target = $('#record\\.input').val();
 				var viewList = [];
 				serverDate.record.forEach(function(favRec){
-					console.log(favRec);
-					console.log(target);
 					if(favRec.indexOf(target) != -1){
 						viewList.push(favRec);
 					}
@@ -116,7 +134,7 @@
 				})
 				$('.list-group').html("");
 				viewList.forEach(function(favRec){
-					$('.list-group').append("<li class='list-group-item' data-target='"+favRec+"'>"+ favRec +"<i class='fa fa-times pull-right' style='margin:-10px;font-size:40px;' data-target='"+favRec+"'></i></li>");
+					$('.list-group').append("<li class='list-group-item'><a href='#' class='go' data-target='"+favRec+"'>"+ favRec +"</a><a href='#' class='del' data-target='"+favRec+"'><i class='fa fa-times pull-right'></i></a></li>");
 				})
 				
 			}
